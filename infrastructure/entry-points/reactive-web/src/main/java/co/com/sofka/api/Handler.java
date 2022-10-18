@@ -76,4 +76,12 @@ public class Handler implements HandlerOperation {
                                 ServerResponse.ok().bodyValue(response)
                         ));
     }
+
+    public Mono<ServerResponse> listenFINDTeamUseCase(ServerRequest serverRequest) {
+
+        return teamUseCase.executeFind()
+                .map(team -> teamToDTO(team, mapper))
+                .collectList()
+                .flatMap(teams -> ServerResponse.ok().bodyValue(teams));
+    }
 }

@@ -5,6 +5,7 @@ import co.com.sofka.model.team.gateways.TeamRepository;
 import co.com.sofka.mongo.helper.AdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -30,5 +31,10 @@ public class TeamRepositoryAdapter extends AdapterOperations<Team, TeamData, Str
     @Override
     public Mono<Void> delete(Team team) {
         return repository.delete(mapper.map(team, TeamData.class));
+    }
+
+    @Override
+    public Flux<Team> findAllTeams() {
+        return repository.findAll().map(this::toEntity);
     }
 }

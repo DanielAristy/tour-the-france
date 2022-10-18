@@ -4,6 +4,7 @@ import co.com.sofka.model.enums.Response;
 import co.com.sofka.model.team.Team;
 import co.com.sofka.model.team.gateways.TeamRepository;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
@@ -24,5 +25,9 @@ public class TeamUseCase {
                         .flatMap(team -> teamRepository.delete(team)
                                 .then(Mono.just(Response.RECORD_DELETED.getValue()))))
                 .switchIfEmpty(Mono.just(Response.RECORD_NOT_FOUND.getValue()));
+    }
+
+    public Flux<Team> executeFind(){
+       return teamRepository.findAllTeams();
     }
 }
