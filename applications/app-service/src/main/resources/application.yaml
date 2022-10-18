@@ -7,6 +7,9 @@ spring:
     add-properties: false
   profiles:
     include: null
+  data:
+    mongodb:
+      uri: "mongodb://myuser:secret@localhost:27017/mydatabase"
 management:
   endpoints:
     web:
