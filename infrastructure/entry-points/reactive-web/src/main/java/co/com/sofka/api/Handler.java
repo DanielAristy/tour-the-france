@@ -1,6 +1,7 @@
 package co.com.sofka.api;
 
 import co.com.sofka.api.dto.CountryDTO;
+import co.com.sofka.model.country.Country;
 import co.com.sofka.usecase.country.CountryUseCase;
 import lombok.RequiredArgsConstructor;
 import org.reactivecommons.utils.ObjectMapper;
@@ -19,14 +20,19 @@ public class Handler implements HandlerOperation {
         return Mono.just(serverRequest)
                 .flatMap(request -> request.bodyToMono(CountryDTO.class))
                 .map(countryDTO -> mapperCountry(countryDTO, mapper))
-                .flatMap(country -> countryUseCase.executePost(country))
+                .flatMap(countryUseCase::executePost)
                 .flatMap(country -> ServerResponse.ok().bodyValue(country));
     }
 
     public Mono<ServerResponse> listenDELETECountryUseCase(ServerRequest serverRequest) {
 
-        String code = serverRequest.pathVariable("code");
-        return countryUseCase.executeDelete(code)
+        String name = serverRequest.pathVariable("name");
+        return countryUseCase.executeDelete(name)
                 .flatMap(country -> ServerResponse.ok().bodyValue(country));
+    }
+
+    public Mono<ServerResponse> listenFINDCountryUseCase(ServerRequest serverRequest) {
+
+        return ServerResponse.ok().body(countryUseCase.executeFind(), Country.class);
     }
 }

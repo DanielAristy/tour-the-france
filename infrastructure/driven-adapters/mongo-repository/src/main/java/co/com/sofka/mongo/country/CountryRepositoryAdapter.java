@@ -5,6 +5,7 @@ import co.com.sofka.model.country.gateways.CountryRepository;
 import co.com.sofka.mongo.helper.AdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -26,5 +27,11 @@ public class CountryRepositoryAdapter extends AdapterOperations<Country, Country
     public Mono<Void> delete(String name) {
         return repository.findByName(name)
                 .flatMap(countryData -> repository.delete(countryData));
+    }
+
+    @Override
+    public Flux<Country> findAllCountries() {
+        return repository.findAll()
+                .map(this::toEntity);
     }
 }
