@@ -1,8 +1,10 @@
 package co.com.sofka.api;
 
 import co.com.sofka.api.dto.CountryDTO;
+import co.com.sofka.api.dto.TeamDTO;
 import co.com.sofka.model.country.Country;
 import co.com.sofka.usecase.country.CountryUseCase;
+import co.com.sofka.usecase.team.TeamUseCase;
 import lombok.RequiredArgsConstructor;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class Handler implements HandlerOperation {
     private final CountryUseCase countryUseCase;
+    private final TeamUseCase teamUseCase;
     private final ObjectMapper mapper;
 
     public Mono<ServerResponse> listenPOSTCountryUseCase(ServerRequest serverRequest) {
@@ -34,5 +37,14 @@ public class Handler implements HandlerOperation {
     public Mono<ServerResponse> listenFINDCountryUseCase(ServerRequest serverRequest) {
 
         return ServerResponse.ok().body(countryUseCase.executeFind(), Country.class);
+    }
+
+    public Mono<ServerResponse> listenPOSTTeamUseCase(ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest)
+                .flatMap(request -> request.bodyToMono(TeamDTO.class))
+                .map(teamDTO -> mapperTeam(teamDTO, mapper))
+                .flatMap(team -> teamUseCase.executePost(team))
+                .flatMap(team -> ServerResponse.ok().bodyValue(team));
     }
 }
