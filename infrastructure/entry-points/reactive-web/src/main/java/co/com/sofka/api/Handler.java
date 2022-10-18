@@ -22,7 +22,7 @@ public class Handler implements HandlerOperation {
     private final TeamUseCase teamUseCase;
     private final ObjectMapper mapper;
 
-    public Mono<ServerResponse> listenPOSTCountryUseCase(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenPostCountryUseCase(ServerRequest serverRequest) {
         return Mono.just(serverRequest)
                 .flatMap(request -> request.bodyToMono(CountryDTO.class))
                 .map(countryDTO -> countryToEntity(countryDTO, mapper))
@@ -31,11 +31,11 @@ public class Handler implements HandlerOperation {
                 .flatMap(countryDTO -> ServerResponse.ok().bodyValue(countryDTO));
     }
 
-    public Mono<ServerResponse> listenDELETECountryUseCase(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenDeleteCountryUseCase(ServerRequest serverRequest) {
 
         return Mono.just(serverRequest)
                 .map(request -> request.pathVariable(Variable.NAME.getValue()))
-                .flatMap(nameCountry -> !nameCountry.matches("^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$")
+                .flatMap(nameCountry -> !nameCountry.matches("^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$J")
                         ? ServerResponse.badRequest().bodyValue(Response.PARAMETER_WITH_DIGITS.getValue())
                         : countryUseCase.executeDelete(nameCountry)
                         .flatMap(response -> Response.RECORD_NOT_FOUND.getValue().equals(response) ?
@@ -43,7 +43,7 @@ public class Handler implements HandlerOperation {
                                 ServerResponse.ok().bodyValue(response)));
     }
 
-    public Mono<ServerResponse> listenFINDCountryUseCase(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenFindCountryUseCase(ServerRequest serverRequest) {
 
         return countryUseCase.executeFind()
                 .map(country -> countryToDTO(country, mapper))
@@ -51,7 +51,7 @@ public class Handler implements HandlerOperation {
                 .flatMap(countries -> ServerResponse.ok().bodyValue(countries));
     }
 
-    public Mono<ServerResponse> listenPOSTTeamUseCase(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenPostTeamUseCase(ServerRequest serverRequest) {
 
         return Mono.just(serverRequest)
                 .flatMap(request -> request.bodyToMono(TeamDTO.class))
@@ -64,7 +64,7 @@ public class Handler implements HandlerOperation {
                 );
     }
 
-    public Mono<ServerResponse> listenDELETETeamUseCase(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenDeleteTeamUseCase(ServerRequest serverRequest) {
 
         return Mono.just(serverRequest)
                 .map(request -> request.pathVariable(Variable.CODE.getValue()))
@@ -77,9 +77,19 @@ public class Handler implements HandlerOperation {
                         ));
     }
 
-    public Mono<ServerResponse> listenFINDTeamUseCase(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenFindTeamUseCase(ServerRequest serverRequest) {
 
         return teamUseCase.executeFind()
+                .map(team -> teamToDTO(team, mapper))
+                .collectList()
+                .flatMap(teams -> ServerResponse.ok().bodyValue(teams));
+    }
+
+    public Mono<ServerResponse> listenFindByCountryTeamUseCase(ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest)
+                .map(request -> request.pathVariable(Variable.NAME.getValue()))
+                .flatMapMany(nameCountry -> teamUseCase.executeFindByCountry(nameCountry))
                 .map(team -> teamToDTO(team, mapper))
                 .collectList()
                 .flatMap(teams -> ServerResponse.ok().bodyValue(teams));

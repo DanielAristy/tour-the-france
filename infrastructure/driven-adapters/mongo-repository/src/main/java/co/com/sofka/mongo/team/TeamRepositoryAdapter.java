@@ -37,4 +37,9 @@ public class TeamRepositoryAdapter extends AdapterOperations<Team, TeamData, Str
     public Flux<Team> findAllTeams() {
         return repository.findAll().map(this::toEntity);
     }
+
+    @Override
+    public Flux<Team> findByCountry(String name) {
+        return doQueryMany(repository.findByCountryName(name));
+    }
 }

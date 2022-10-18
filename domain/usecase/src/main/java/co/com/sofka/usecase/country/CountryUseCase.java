@@ -13,7 +13,10 @@ public class CountryUseCase {
 
     public Mono<Country> executePost(Country countryData) {
         return Mono.just(countryData)
-                .map(country -> country.toBuilder().name(country.getName().toUpperCase()).build())
+                .map(country -> country.toBuilder()
+                        .name(country.getName().toUpperCase())
+                        .code(country.getCode().toUpperCase())
+                        .build())
                 .flatMap(countryRepository::create);
     }
 

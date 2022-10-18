@@ -1,5 +1,6 @@
 package co.com.sofka.usecase.team;
 
+import co.com.sofka.model.country.Country;
 import co.com.sofka.model.enums.Response;
 import co.com.sofka.model.team.Team;
 import co.com.sofka.model.team.gateways.TeamRepository;
@@ -11,10 +12,16 @@ import reactor.core.publisher.Mono;
 public class TeamUseCase {
 
     private final TeamRepository teamRepository;
+//    private final CountryRepository countryRepository;
 
     public Mono<Team> executePost(Team team) {
         return Mono.just(team)
-                .map(country -> team.toBuilder().code(team.getCode().toUpperCase()).build())
+                .map(teamData -> teamData.toBuilder().code(teamData.getCode().toUpperCase())
+                        .country(Country.builder()
+                                .name(teamData.getCountry().getName().toUpperCase())
+                                .code(teamData.getCountry().getCode().toUpperCase())
+                                .build())
+                        .build())
                 .flatMap(teamData -> teamRepository.create(teamData));
     }
 
@@ -27,7 +34,11 @@ public class TeamUseCase {
                 .switchIfEmpty(Mono.just(Response.RECORD_NOT_FOUND.getValue()));
     }
 
-    public Flux<Team> executeFind(){
-       return teamRepository.findAllTeams();
+    public Flux<Team> executeFind() {
+        return teamRepository.findAllTeams();
+    }
+
+    public Flux<Team> executeFindByCountry(String name) {
+        return teamRepository.findByCountry(name.toUpperCase());
     }
 }
