@@ -9,8 +9,7 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public class CountryRepositoryAdapter extends AdapterOperations<Country, CountryData, String, CountryDBRepository>
-implements CountryRepository
-{
+        implements CountryRepository {
 
     public CountryRepositoryAdapter(CountryDBRepository repository, ObjectMapper mapper) {
 
@@ -21,5 +20,11 @@ implements CountryRepository
     public Mono<Country> create(Country country) {
         return repository.save(mapper.map(country, CountryData.class))
                 .map(this::toEntity);
+    }
+
+    @Override
+    public Mono<Void> delete(String name) {
+        return repository.findByName(name)
+                .flatMap(countryData -> repository.delete(countryData));
     }
 }

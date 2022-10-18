@@ -14,11 +14,19 @@ import reactor.core.publisher.Mono;
 public class Handler implements HandlerOperation {
     private final CountryUseCase countryUseCase;
     private final ObjectMapper mapper;
+
     public Mono<ServerResponse> listenPOSTCountryUseCase(ServerRequest serverRequest) {
         return Mono.just(serverRequest)
                 .flatMap(request -> request.bodyToMono(CountryDTO.class))
                 .map(countryDTO -> mapperCountry(countryDTO, mapper))
                 .flatMap(country -> countryUseCase.executePost(country))
+                .flatMap(country -> ServerResponse.ok().bodyValue(country));
+    }
+
+    public Mono<ServerResponse> listenDELETECountryUseCase(ServerRequest serverRequest) {
+
+        String code = serverRequest.pathVariable("code");
+        return countryUseCase.executeDelete(code)
                 .flatMap(country -> ServerResponse.ok().bodyValue(country));
     }
 }
