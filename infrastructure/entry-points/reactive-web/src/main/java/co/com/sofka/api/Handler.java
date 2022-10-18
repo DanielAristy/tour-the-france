@@ -22,9 +22,10 @@ public class Handler implements HandlerOperation {
     public Mono<ServerResponse> listenPOSTCountryUseCase(ServerRequest serverRequest) {
         return Mono.just(serverRequest)
                 .flatMap(request -> request.bodyToMono(CountryDTO.class))
-                .map(countryDTO -> mapperCountry(countryDTO, mapper))
+                .map(countryDTO -> countryToEntity(countryDTO, mapper))
                 .flatMap(countryUseCase::executePost)
-                .flatMap(country -> ServerResponse.ok().bodyValue(country));
+                .map(country -> countryToDTO(country, mapper))
+                .flatMap(countryDTO -> ServerResponse.ok().bodyValue(countryDTO));
     }
 
     public Mono<ServerResponse> listenDELETECountryUseCase(ServerRequest serverRequest) {
@@ -43,8 +44,9 @@ public class Handler implements HandlerOperation {
 
         return Mono.just(serverRequest)
                 .flatMap(request -> request.bodyToMono(TeamDTO.class))
-                .map(teamDTO -> mapperTeam(teamDTO, mapper))
-                .flatMap(team -> teamUseCase.executePost(team))
-                .flatMap(team -> ServerResponse.ok().bodyValue(team));
+                .map(teamDTO -> teamToEntity(teamDTO, mapper))
+                .flatMap(teamUseCase::executePost)
+                .map(country -> teamToDTO(country, mapper))
+                .flatMap(teamDTO -> ServerResponse.ok().bodyValue(teamDTO));
     }
 }
