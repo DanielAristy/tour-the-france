@@ -17,7 +17,7 @@ import java.util.List;
 public class TeamDTO {
     private String name;
     private String code;
-    private Country country;
+    private CountryDTO country;
     @JsonIgnore
     private List<Cyclist> cyclists;
 }

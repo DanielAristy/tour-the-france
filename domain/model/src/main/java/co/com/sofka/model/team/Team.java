@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Team {
+    private String id;
     private String name;
     private String code;
     private Country country;

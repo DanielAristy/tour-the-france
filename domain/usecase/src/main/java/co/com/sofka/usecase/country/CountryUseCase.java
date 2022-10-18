@@ -2,6 +2,7 @@ package co.com.sofka.usecase.country;
 
 import co.com.sofka.model.country.Country;
 import co.com.sofka.model.country.gateways.CountryRepository;
+import co.com.sofka.model.enums.Response;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,10 +17,13 @@ public class CountryUseCase {
                 .flatMap(countryRepository::create);
     }
 
-    public Mono<Void> executeDelete(String name) {
+    public Mono<String> executeDelete(String name) {
         return Mono.just(name)
                 .map(String::toUpperCase)
-                .flatMap(countryRepository::delete);
+                .flatMap(nameCountry -> countryRepository.findByName(nameCountry)
+                        .flatMap(country -> countryRepository.delete(country)
+                                .then(Mono.just(Response.RECORD_DELETED.getValue()))))
+                .switchIfEmpty(Mono.just(Response.RECORD_NOT_FOUND.getValue()));
     }
 
     public Flux<Country> executeFind() {

@@ -21,4 +21,14 @@ public class TeamRepositoryAdapter extends AdapterOperations<Team, TeamData, Str
         return repository.save(mapper.map(team, TeamData.class))
                 .map(this::toEntity);
     }
+
+    @Override
+    public Mono<Team> findByCode(String code) {
+        return repository.findByCode(code).map(this::toEntity);
+    }
+
+    @Override
+    public Mono<Void> delete(Team team) {
+        return repository.delete(mapper.map(team, TeamData.class));
+    }
 }

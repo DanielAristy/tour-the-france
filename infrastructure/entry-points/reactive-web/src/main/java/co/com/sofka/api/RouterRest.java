@@ -17,6 +17,7 @@ public class RouterRest {
                 .andRoute(DELETE("/api/country/{name}"), handler::listenDELETECountryUseCase)
                 .andRoute(GET("/api/countries"), handler::listenFINDCountryUseCase)
                 .andRoute(POST("/api/team"), handler::listenPOSTTeamUseCase)
+                .andRoute(DELETE("/api/team/{code}"), handler::listenDELETETeamUseCase)
                 ;
     }
 }

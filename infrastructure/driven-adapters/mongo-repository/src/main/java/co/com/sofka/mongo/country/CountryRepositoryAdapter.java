@@ -24,9 +24,13 @@ public class CountryRepositoryAdapter extends AdapterOperations<Country, Country
     }
 
     @Override
-    public Mono<Void> delete(String name) {
-        return repository.findByName(name)
-                .flatMap(countryData -> repository.delete(countryData));
+    public Mono<Country> findByName(String name) {
+        return repository.findByName(name).map(this::toEntity);
+    }
+
+    @Override
+    public Mono<Void> delete(Country country) {
+        return repository.delete(mapper.map(country, CountryData.class));
     }
 
     @Override

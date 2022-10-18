@@ -6,4 +6,8 @@ import reactor.core.publisher.Mono;
 public interface TeamRepository {
 
     Mono<Team> create(Team team);
+
+    Mono<Team> findByCode(String code);
+
+    Mono<Void> delete(Team team);
 }
