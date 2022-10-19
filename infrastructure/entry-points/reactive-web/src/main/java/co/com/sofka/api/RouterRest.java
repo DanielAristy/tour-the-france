@@ -22,6 +22,7 @@ public class RouterRest {
                 .andRoute(GET("/api/team/cyclists/{teamCode}"), handler::listenGetCyclistByTeamUseCase)
                 .andRoute(GET("/api/teams"), handler::listenFindTeamUseCase)
                 .andRoute(GET("/api/teams/{name}"), handler::listenFindByCountryTeamUseCase)
+                .andRoute(GET("/api/cyclists/{nationality}"), handler::listenFindCyclistUseCase)
                 ;
     }
 }

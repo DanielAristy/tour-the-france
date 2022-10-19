@@ -6,6 +6,7 @@ import co.com.sofka.api.dto.TeamDTO;
 import co.com.sofka.model.enums.Response;
 import co.com.sofka.model.enums.Variable;
 import co.com.sofka.usecase.country.CountryUseCase;
+import co.com.sofka.usecase.cyclist.CyclistUseCase;
 import co.com.sofka.usecase.cyclisteam.CyclistTeamUseCase;
 import co.com.sofka.usecase.team.TeamUseCase;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ public class Handler implements HandlerOperation {
     private final CountryUseCase countryUseCase;
     private final TeamUseCase teamUseCase;
     private final CyclistTeamUseCase cyclistTeamUseCase;
+
+    private final CyclistUseCase cyclistUseCase;
     private final ObjectMapper mapper;
 
     public Mono<ServerResponse> listenPostCountryUseCase(ServerRequest serverRequest) {
@@ -111,7 +114,17 @@ public class Handler implements HandlerOperation {
                 .flatMap(teamCode -> !teamCode.matches("^[a-zA-Z\\d\\\\s]{1,3}+$")
                         ? ServerResponse.badRequest().bodyValue(Response.ALPHANUMERIC.getValue())
                         : cyclistTeamUseCase.findCyclistByTeamCode(teamCode)
-                        .flatMap(cyclists -> ServerResponse.ok().bodyValue(cyclists)));
+                        .flatMap(cyclists -> ServerResponse.ok().bodyValue(cyclists))
+                );
+    }
+
+    public Mono<ServerResponse> listenFindCyclistUseCase(ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest)
+                .map(request -> request.pathVariable("nationality"))
+                .flatMapMany(cyclistUseCase::findByCountry)
+                .collectList()
+                .flatMap(cyclists -> ServerResponse.ok().bodyValue(cyclists));
     }
 
     private Mono<ServerResponse> validateResponse(String response) {

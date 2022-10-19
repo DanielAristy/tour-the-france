@@ -54,6 +54,14 @@ MongoDB [Download MongoDb Compass](https://www.mongodb.com/try/download/compass)
 
 - <p style="font-weight:bold">{host}/api/teams/{name}</p>
 
+### Listar ciclistas por codigo del equipo
+
+- <p style="font-weight:bold">{host}/api/team/cyclists/{teamCode}</p>
+
 ### Agregar un ciclista a un equipo
 
 - <p style="font-weight:bold">{host}/api/team/cyclist</p>
+
+### Listar ciclistas por nacionalidad
+
+- <p style="font-weight:bold">{host}/api/cyclists/{nationality}</p>
