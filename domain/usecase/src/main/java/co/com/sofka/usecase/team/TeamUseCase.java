@@ -1,17 +1,12 @@
 package co.com.sofka.usecase.team;
 
 import co.com.sofka.model.country.Country;
-import co.com.sofka.model.cyclist.Cyclist;
 import co.com.sofka.model.enums.Response;
 import co.com.sofka.model.team.Team;
 import co.com.sofka.model.team.gateways.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 public class TeamUseCase {
@@ -45,14 +40,5 @@ public class TeamUseCase {
 
     public Flux<Team> executeFindByCountry(String name) {
         return teamRepository.findByCountryName(name.toUpperCase());
-    }
-
-    public Mono<List<Cyclist>> findCyclistByTeamCode(String teamCode) {
-        return teamRepository.findByCode(teamCode.toUpperCase())
-                .flatMap(team -> Objects.isNull(team.getCyclists())
-                        ? Mono.just(new ArrayList<Cyclist>())
-                        : Mono.just(team.getCyclists())
-                );
-
     }
 }

@@ -22,7 +22,6 @@ import java.util.Objects;
 public class Handler implements HandlerOperation {
     private final CountryUseCase countryUseCase;
     private final TeamUseCase teamUseCase;
-
     private final CyclistTeamUseCase cyclistTeamUseCase;
     private final ObjectMapper mapper;
 
@@ -111,7 +110,7 @@ public class Handler implements HandlerOperation {
                 .map(request -> request.pathVariable("teamCode"))
                 .flatMap(teamCode -> !teamCode.matches("^[a-zA-Z\\d\\\\s]{1,3}+$")
                         ? ServerResponse.badRequest().bodyValue(Response.ALPHANUMERIC.getValue())
-                        : teamUseCase.findCyclistByTeamCode(teamCode)
+                        : cyclistTeamUseCase.findCyclistByTeamCode(teamCode)
                         .flatMap(cyclists -> ServerResponse.ok().bodyValue(cyclists)));
     }
 

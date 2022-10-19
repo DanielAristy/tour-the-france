@@ -9,6 +9,10 @@ import co.com.sofka.model.team.gateways.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 @RequiredArgsConstructor
 public class CyclistTeamUseCase {
 
@@ -36,5 +40,14 @@ public class CyclistTeamUseCase {
                                 ).switchIfEmpty(Mono.just(Response.NOT_FOUND_COUNTRY.getValue()))
                         ).switchIfEmpty(Mono.just(Response.NOT_FOUND_TEAM.getValue()))
                 );
+    }
+
+    public Mono<List<Cyclist>> findCyclistByTeamCode(String teamCode) {
+        return teamRepository.findByCode(teamCode.toUpperCase())
+                .flatMap(team -> Objects.isNull(team.getCyclists())
+                        ? Mono.just(new ArrayList<>())
+                        : Mono.just(team.getCyclists())
+                );
+
     }
 }
