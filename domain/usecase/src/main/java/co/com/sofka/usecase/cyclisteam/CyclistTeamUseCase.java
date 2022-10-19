@@ -3,6 +3,7 @@ package co.com.sofka.usecase.cyclisteam;
 import co.com.sofka.model.country.gateways.CountryRepository;
 import co.com.sofka.model.cyclist.Cyclist;
 import co.com.sofka.model.cyclist.gateways.CyclistRepository;
+import co.com.sofka.model.enums.Response;
 import co.com.sofka.model.team.Team;
 import co.com.sofka.model.team.gateways.TeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,14 +38,14 @@ public class CyclistTeamUseCase {
                                                     return teamData;
                                                 })
                                                 .flatMap(this::updateTeam)
-                                        ).switchIfEmpty(Mono.just("No se pudo agregar el ciclista al equipo ".concat(team.getCode())))
-                                ).switchIfEmpty(Mono.just("No existe pais en base de datos"))
-                        ).switchIfEmpty(Mono.defer(() -> Mono.just("No se ha encontrado equipo de referencia")))
+                                        ).switchIfEmpty(Mono.just(Response.CYCLIST_NOT_ADDED.getValue().concat(team.getCode())))
+                                ).switchIfEmpty(Mono.just(Response.NOT_FOUND_COUNTRY.getValue()))
+                        ).switchIfEmpty(Mono.just(Response.NOT_FOUND_TEAM.getValue()))
                 );
     }
 
     Mono<String> updateTeam(Team team) {
         return teamRepository.create(team)
-                .then(Mono.just("Se ha actualizado el equipo correctamente"));
+                .then(Mono.just(Response.UPDATE_TEAM_SUCCESSFULLY.getValue()));
     }
 }

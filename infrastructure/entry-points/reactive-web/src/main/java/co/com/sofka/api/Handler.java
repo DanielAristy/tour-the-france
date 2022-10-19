@@ -42,9 +42,7 @@ public class Handler implements HandlerOperation {
                 .flatMap(nameCountry -> !nameCountry.matches("^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$")
                         ? ServerResponse.badRequest().bodyValue(Response.PARAMETER_WITH_DIGITS.getValue())
                         : countryUseCase.executeDelete(nameCountry)
-                        .flatMap(response -> Response.RECORD_NOT_FOUND.getValue().equals(response) ?
-                                ServerResponse.badRequest().bodyValue(response) :
-                                ServerResponse.ok().bodyValue(response)));
+                        .flatMap(this::validateRespone));
     }
 
     public Mono<ServerResponse> listenFindCountryUseCase(ServerRequest serverRequest) {
@@ -75,10 +73,7 @@ public class Handler implements HandlerOperation {
                 .flatMap(codeTeam -> !codeTeam.matches("^[a-z\\d\\\\s]{1,3}+$") ?
                         ServerResponse.badRequest().bodyValue(Response.PARAMETER_WITH_DIGITS.getValue())
                         : teamUseCase.executeDelete(codeTeam)
-                        .flatMap(response -> Response.RECORD_NOT_FOUND.getValue().equals(response) ?
-                                ServerResponse.badRequest().bodyValue(response) :
-                                ServerResponse.ok().bodyValue(response)
-                        ));
+                        .flatMap(this::validateRespone));
     }
 
     public Mono<ServerResponse> listenFindTeamUseCase(ServerRequest serverRequest) {
@@ -99,7 +94,7 @@ public class Handler implements HandlerOperation {
                 .flatMap(teams -> ServerResponse.ok().bodyValue(teams));
     }
 
-    public Mono<ServerResponse> listenPostCyclistUseCase(ServerRequest serverRequest) {
+    public Mono<ServerResponse> listenPostCyclistTeamUseCase(ServerRequest serverRequest) {
 
         return Mono.just(serverRequest)
                 .flatMap(request -> request.bodyToMono(CyclistDTO.class))
@@ -107,7 +102,16 @@ public class Handler implements HandlerOperation {
                         ServerResponse.badRequest().bodyValue(Response.ALPHANUMERIC.getValue())
                         : Mono.just(cyclistToEntity(cyclistDTO, mapper))
                         .flatMap(cyclistTeamUseCase::executePost)
-                        .flatMap(response -> ServerResponse.ok().bodyValue(response))
+                        .flatMap(this::validateRespone)
                 );
+    }
+
+    private Mono<ServerResponse> validateRespone(String response) {
+        return Response.NOT_FOUND_TEAM.getValue().equals(response) ||
+                Response.NOT_FOUND_COUNTRY.getValue().equals(response) ||
+                Response.CYCLIST_NOT_ADDED.getValue().equals(response) ||
+                Response.RECORD_NOT_FOUND.getValue().equals(response)
+                ? ServerResponse.badRequest().bodyValue(response)
+                : ServerResponse.ok().bodyValue(response);
     }
 }
