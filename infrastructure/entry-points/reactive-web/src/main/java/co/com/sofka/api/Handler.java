@@ -1,10 +1,12 @@
 package co.com.sofka.api;
 
 import co.com.sofka.api.dto.CountryDTO;
+import co.com.sofka.api.dto.CyclistDTO;
 import co.com.sofka.api.dto.TeamDTO;
 import co.com.sofka.model.enums.Response;
 import co.com.sofka.model.enums.Variable;
 import co.com.sofka.usecase.country.CountryUseCase;
+import co.com.sofka.usecase.cyclist.CyclistUseCase;
 import co.com.sofka.usecase.team.TeamUseCase;
 import lombok.RequiredArgsConstructor;
 import org.reactivecommons.utils.ObjectMapper;
@@ -20,6 +22,8 @@ import java.util.Objects;
 public class Handler implements HandlerOperation {
     private final CountryUseCase countryUseCase;
     private final TeamUseCase teamUseCase;
+
+    private final CyclistUseCase cyclistUseCase;
     private final ObjectMapper mapper;
 
     public Mono<ServerResponse> listenPostCountryUseCase(ServerRequest serverRequest) {
@@ -35,7 +39,7 @@ public class Handler implements HandlerOperation {
 
         return Mono.just(serverRequest)
                 .map(request -> request.pathVariable(Variable.NAME.getValue()))
-                .flatMap(nameCountry -> !nameCountry.matches("^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$J")
+                .flatMap(nameCountry -> !nameCountry.matches("^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$")
                         ? ServerResponse.badRequest().bodyValue(Response.PARAMETER_WITH_DIGITS.getValue())
                         : countryUseCase.executeDelete(nameCountry)
                         .flatMap(response -> Response.RECORD_NOT_FOUND.getValue().equals(response) ?
@@ -55,7 +59,7 @@ public class Handler implements HandlerOperation {
 
         return Mono.just(serverRequest)
                 .flatMap(request -> request.bodyToMono(TeamDTO.class))
-                .flatMap(teamDTO -> Objects.isNull(teamDTO.getCode()) || !teamDTO.getCode().matches("^[a-z\\d\\\\s]{1,3}+$") ?
+                .flatMap(teamDTO -> Objects.isNull(teamDTO.getCode()) || !teamDTO.getCode().matches("^[a-zA-Z\\d\\\\s]{1,3}+$ó") ?
                         ServerResponse.badRequest().bodyValue(Response.ALPHANUMERIC.getValue())
                         : Mono.just(teamToEntity(teamDTO, mapper))
                         .flatMap(teamUseCase::executePost)
@@ -89,9 +93,22 @@ public class Handler implements HandlerOperation {
 
         return Mono.just(serverRequest)
                 .map(request -> request.pathVariable(Variable.NAME.getValue()))
-                .flatMapMany(nameCountry -> teamUseCase.executeFindByCountry(nameCountry))
+                .flatMapMany(teamUseCase::executeFindByCountry)
                 .map(team -> teamToDTO(team, mapper))
                 .collectList()
                 .flatMap(teams -> ServerResponse.ok().bodyValue(teams));
+    }
+
+    public Mono<ServerResponse> listenPostCyclistUseCase(ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest)
+                .flatMap(request -> request.bodyToMono(CyclistDTO.class))
+                .flatMap(cyclistDTO -> Objects.isNull(cyclistDTO.getTeamCode()) || !(cyclistDTO.getTeamCode().matches("^[a-zA-Z\\d\\\\s]{1,3}+$")) ?
+                        ServerResponse.badRequest().bodyValue(Response.ALPHANUMERIC.getValue())
+                        : Mono.just(cyclistToEntity(cyclistDTO, mapper))
+                        .flatMap(cyclistUseCase::executePost)
+                        .map(cyclist -> cyclistToDTO(cyclist, mapper))
+                        .flatMap(cyclistDto -> ServerResponse.ok().bodyValue(cyclistDto))
+                );
     }
 }

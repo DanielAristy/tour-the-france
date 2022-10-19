@@ -1,8 +1,10 @@
 package co.com.sofka.api;
 
 import co.com.sofka.api.dto.CountryDTO;
+import co.com.sofka.api.dto.CyclistDTO;
 import co.com.sofka.api.dto.TeamDTO;
 import co.com.sofka.model.country.Country;
+import co.com.sofka.model.cyclist.Cyclist;
 import co.com.sofka.model.team.Team;
 import org.reactivecommons.utils.ObjectMapper;
 
@@ -22,5 +24,13 @@ public interface HandlerOperation {
 
     default TeamDTO teamToDTO(Team team, ObjectMapper mapper) {
         return mapper.map(team, TeamDTO.class);
+    }
+
+    default Cyclist cyclistToEntity(CyclistDTO cyclistDTO, ObjectMapper mapper) {
+        return mapper.map(cyclistDTO, Cyclist.class);
+    }
+
+    default CyclistDTO cyclistToDTO(Cyclist cyclist, ObjectMapper mapper) {
+        return mapper.map(cyclist, CyclistDTO.class);
     }
 }

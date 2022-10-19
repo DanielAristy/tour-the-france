@@ -20,6 +20,7 @@ public class RouterRest {
                 .andRoute(DELETE("/api/team/{code}"), handler::listenDeleteTeamUseCase)
                 .andRoute(GET("/api/teams"), handler::listenFindTeamUseCase)
                 .andRoute(GET("/api/teams/{name}"), handler::listenFindByCountryTeamUseCase)
+                .andRoute(POST("/api/cyclist"), handler::listenPostCyclistUseCase)
                 ;
     }
 }
