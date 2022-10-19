@@ -1,6 +1,5 @@
 package co.com.sofka.mongo.cyclist;
 
-import co.com.sofka.mongo.country.CountryData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

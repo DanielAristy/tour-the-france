@@ -9,9 +9,6 @@ import co.com.sofka.model.team.gateways.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.Objects;
-
 @RequiredArgsConstructor
 public class CyclistTeamUseCase {
 
@@ -28,24 +25,16 @@ public class CyclistTeamUseCase {
                 .flatMap(cyclistData -> teamRepository.findByCode(cyclistData.getTeamCode())
                         .flatMap(team -> countryRepository.findByName(cyclistData.getCountry())
                                 .flatMap(country -> cyclistRepository.create(cyclistData)
-                                        .flatMap(cyclistDetails -> team.getCyclists().isEmpty() || Objects.isNull(team.getCyclists())
-                                                ? Mono.just(team.toBuilder().cyclists(List.of(cyclistDetails)).build())
-                                                .flatMap(this::updateTeam)
-                                                : Mono.just(team.toBuilder().build())
-                                                .map(teamDetails -> {
-                                                    Team teamData = teamDetails.toBuilder().build();
-                                                    teamData.getCyclists().add(cyclistDetails);
-                                                    return teamData;
-                                                })
-                                                .flatMap(this::updateTeam)
-                                        ).switchIfEmpty(Mono.just(Response.CYCLIST_NOT_ADDED.getValue().concat(team.getCode())))
+                                        .map(cyclistDetails -> {
+                                            Team teamData = team.toBuilder().build();
+                                            teamData.getCyclists().add(cyclistDetails);
+                                            return teamData;
+                                        })
+                                        .flatMap(teamDetails -> teamRepository.create(team)
+                                                .then(Mono.just(Response.UPDATE_TEAM_SUCCESSFULLY.getValue())))
+                                        .switchIfEmpty(Mono.just(Response.CYCLIST_NOT_ADDED.getValue().concat(team.getCode())))
                                 ).switchIfEmpty(Mono.just(Response.NOT_FOUND_COUNTRY.getValue()))
                         ).switchIfEmpty(Mono.just(Response.NOT_FOUND_TEAM.getValue()))
                 );
-    }
-
-    Mono<String> updateTeam(Team team) {
-        return teamRepository.create(team)
-                .then(Mono.just(Response.UPDATE_TEAM_SUCCESSFULLY.getValue()));
     }
 }
