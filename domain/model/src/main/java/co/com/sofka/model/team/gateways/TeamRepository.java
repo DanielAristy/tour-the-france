@@ -14,5 +14,6 @@ public interface TeamRepository {
 
     Flux<Team> findAllTeams();
 
-    Flux<Team> findByCountry(String name);
+    Flux<Team> findByCountryName(String name);
+
 }

@@ -10,4 +10,5 @@ public interface TeamDBRepository extends ReactiveMongoRepository<TeamData, Stri
     Mono<TeamData> findByCode(String code);
 
     Flux<TeamData> findByCountryName(String name);
+
 }

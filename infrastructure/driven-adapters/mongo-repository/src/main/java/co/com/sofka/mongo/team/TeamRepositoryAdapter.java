@@ -39,7 +39,7 @@ public class TeamRepositoryAdapter extends AdapterOperations<Team, TeamData, Str
     }
 
     @Override
-    public Flux<Team> findByCountry(String name) {
+    public Flux<Team> findByCountryName(String name) {
         return doQueryMany(repository.findByCountryName(name));
     }
 }
