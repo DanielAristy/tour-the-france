@@ -17,7 +17,7 @@ public class CyclistData {
     @Id
     private String id;
     private String name;
-    private String code;
+    private String competitorNumber;
     private String teamCode;
-    private CountryData country;
+    private String country;
 }

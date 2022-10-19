@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CyclistDTO {
     private String name;
-    private String code;
+    private String competitorNumber;
     private String teamCode;
-    private CountryDTO country;
+    private String country;
 }

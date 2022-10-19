@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Cyclist {
     private String name;
-    private String code;
+    private String competitorNumber;
     private String teamCode;
-    private Country country;
+    private String country;
 }
