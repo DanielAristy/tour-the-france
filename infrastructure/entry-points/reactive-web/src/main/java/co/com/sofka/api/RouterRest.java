@@ -21,7 +21,6 @@ public class RouterRest {
                 .andRoute(GET("/api/team/cyclists/{teamCode}"), handler::listenGetCyclistByTeamUseCase)
                 .andRoute(POST("/api/country"), handler::listenPostCountryUseCase)
                 .andRoute(DELETE("/api/country/{name}"), handler::listenDeleteCountryUseCase)
-
                 .andRoute(GET("/api/countries"), handler::listenFindCountryUseCase)
                 .andRoute(GET("/api/cyclists/{nationality}"), handler::listenFindCyclistUseCase)
                 ;

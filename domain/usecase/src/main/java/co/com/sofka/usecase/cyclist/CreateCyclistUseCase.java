@@ -28,8 +28,8 @@ public class CreateCyclistUseCase {
                 .flatMap(cyclistData -> teamRepository.findByCode(cyclistData.getTeamCode())
                         .flatMap(team -> countryRepository.findByName(cyclistData.getCountry())
                                 .flatMap(country -> cyclistRepository.create(cyclistData)
-                                        .flatMap(cyclistDetails -> team.getCyclists().isEmpty() || Objects.isNull(team.getCyclists())
-                                                ? Mono.just(team.toBuilder().cyclists(List.of(cyclistDetails)).build())
+                                        .flatMap(cyclistDetails -> Objects.isNull(team.getCyclists())
+                                                ? Mono.just(team.toBuilder().country(country).cyclists(List.of(cyclistDetails)).build())
                                                 .flatMap(this::updateTeam)
                                                 : Mono.just(team.toBuilder().build())
                                                 .map(teamDetails -> {
