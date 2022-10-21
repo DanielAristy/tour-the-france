@@ -5,10 +5,16 @@ import co.com.sofka.api.dto.CyclistDTO;
 import co.com.sofka.api.dto.TeamDTO;
 import co.com.sofka.model.enums.Response;
 import co.com.sofka.model.enums.Variable;
-import co.com.sofka.usecase.country.CountryUseCase;
-import co.com.sofka.usecase.cyclist.CyclistUseCase;
-import co.com.sofka.usecase.cyclisteam.CyclistTeamUseCase;
-import co.com.sofka.usecase.team.TeamUseCase;
+import co.com.sofka.usecase.country.CreateCountryUseCase;
+import co.com.sofka.usecase.country.DeleteCountryUseCase;
+import co.com.sofka.usecase.country.FindCountriesUseCase;
+import co.com.sofka.usecase.cyclist.CreateCyclistUseCase;
+import co.com.sofka.usecase.cyclist.FindCyclistByCountryUseCase;
+import co.com.sofka.usecase.cyclisteam.FindCyclistByTeamCodeUseCase;
+import co.com.sofka.usecase.team.CreateTeamUseCase;
+import co.com.sofka.usecase.team.DeleteTeamUseCase;
+import co.com.sofka.usecase.team.FindTeamByCountryUseCase;
+import co.com.sofka.usecase.team.FindTeamsUseCase;
 import lombok.RequiredArgsConstructor;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -21,39 +27,20 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 public class Handler implements HandlerOperation {
-    private final CountryUseCase countryUseCase;
-    private final TeamUseCase teamUseCase;
-    private final CyclistTeamUseCase cyclistTeamUseCase;
 
-    private final CyclistUseCase cyclistUseCase;
+    private final CreateTeamUseCase createTeamUseCase;
+    private final DeleteTeamUseCase deleteTeamUseCase;
+    private final FindTeamsUseCase findTeamsUseCase;
+    private final FindTeamByCountryUseCase findTeamByCountryUseCase;
+    private final FindCyclistByTeamCodeUseCase findCyclistByTeamCodeUseCase;
+    private final CreateCountryUseCase createCountryUseCase;
+    private final DeleteCountryUseCase deleteCountryUseCase;
+    private final FindCountriesUseCase findCountriesUseCase;
+    private final FindCyclistByCountryUseCase findCyclistByCountryUseCase;
+
+    private final CreateCyclistUseCase createCyclistUseCase;
+
     private final ObjectMapper mapper;
-
-    public Mono<ServerResponse> listenPostCountryUseCase(ServerRequest serverRequest) {
-        return Mono.just(serverRequest)
-                .flatMap(request -> request.bodyToMono(CountryDTO.class))
-                .map(countryDTO -> countryToEntity(countryDTO, mapper))
-                .flatMap(countryUseCase::executePost)
-                .map(country -> countryToDTO(country, mapper))
-                .flatMap(countryDTO -> ServerResponse.ok().bodyValue(countryDTO));
-    }
-
-    public Mono<ServerResponse> listenDeleteCountryUseCase(ServerRequest serverRequest) {
-
-        return Mono.just(serverRequest)
-                .map(request -> request.pathVariable(Variable.NAME.getValue()))
-                .flatMap(nameCountry -> !nameCountry.matches("^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$")
-                        ? ServerResponse.badRequest().bodyValue(Response.PARAMETER_WITH_DIGITS.getValue())
-                        : countryUseCase.executeDelete(nameCountry)
-                        .flatMap(this::validateResponse));
-    }
-
-    public Mono<ServerResponse> listenFindCountryUseCase(ServerRequest serverRequest) {
-
-        return countryUseCase.executeFind()
-                .map(country -> countryToDTO(country, mapper))
-                .collectList()
-                .flatMap(countries -> ServerResponse.ok().bodyValue(countries));
-    }
 
     public Mono<ServerResponse> listenPostTeamUseCase(ServerRequest serverRequest) {
 
@@ -62,7 +49,7 @@ public class Handler implements HandlerOperation {
                 .flatMap(teamDTO -> Objects.isNull(teamDTO.getCode()) || !teamDTO.getCode().matches("^[a-zA-Z\\d\\\\s]{1,3}+$") ?
                         ServerResponse.badRequest().bodyValue(Response.ALPHANUMERIC.getValue())
                         : Mono.just(teamToEntity(teamDTO, mapper))
-                        .flatMap(teamUseCase::executePost)
+                        .flatMap(createTeamUseCase::createTeam)
                         .map(country -> teamToDTO(country, mapper))
                         .flatMap(teamDto -> ServerResponse.ok().bodyValue(teamDto))
                 );
@@ -74,26 +61,63 @@ public class Handler implements HandlerOperation {
                 .map(request -> request.pathVariable(Variable.CODE.getValue()))
                 .flatMap(codeTeam -> !codeTeam.matches("^[a-zA-Z\\d\\\\s]{1,3}+$") ?
                         ServerResponse.badRequest().bodyValue(Response.PARAMETER_WITH_DIGITS.getValue())
-                        : teamUseCase.executeDelete(codeTeam)
+                        : deleteTeamUseCase.deleteTeam(codeTeam)
                         .flatMap(this::validateResponse));
     }
 
     public Mono<ServerResponse> listenFindTeamUseCase(ServerRequest serverRequest) {
 
-        return teamUseCase.executeFind()
+        return findTeamsUseCase.findTeams()
                 .map(team -> teamToDTO(team, mapper))
                 .collectList()
                 .flatMap(teams -> ServerResponse.ok().bodyValue(teams));
+    }
+
+    public Mono<ServerResponse> listenGetCyclistByTeamUseCase(ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .map(request -> request.pathVariable("teamCode"))
+                .flatMap(teamCode -> !teamCode.matches("^[a-zA-Z\\d\\\\s]{1,3}+$")
+                        ? ServerResponse.badRequest().bodyValue(Response.ALPHANUMERIC.getValue())
+                        : findCyclistByTeamCodeUseCase.findByTeamCode(teamCode)
+                        .flatMap(cyclists -> ServerResponse.ok().bodyValue(cyclists))
+                );
     }
 
     public Mono<ServerResponse> listenFindByCountryTeamUseCase(ServerRequest serverRequest) {
 
         return Mono.just(serverRequest)
                 .map(request -> request.pathVariable(Variable.NAME.getValue()))
-                .flatMapMany(teamUseCase::executeFindByCountry)
+                .flatMapMany(findTeamByCountryUseCase::findByCountry)
                 .map(team -> teamToDTO(team, mapper))
                 .collectList()
                 .flatMap(teams -> ServerResponse.ok().bodyValue(teams));
+    }
+
+    public Mono<ServerResponse> listenPostCountryUseCase(ServerRequest serverRequest) {
+        return Mono.just(serverRequest)
+                .flatMap(request -> request.bodyToMono(CountryDTO.class))
+                .map(countryDTO -> countryToEntity(countryDTO, mapper))
+                .flatMap(createCountryUseCase::createCountry)
+                .map(country -> countryToDTO(country, mapper))
+                .flatMap(countryDTO -> ServerResponse.ok().bodyValue(countryDTO));
+    }
+
+    public Mono<ServerResponse> listenDeleteCountryUseCase(ServerRequest serverRequest) {
+
+        return Mono.just(serverRequest)
+                .map(request -> request.pathVariable(Variable.NAME.getValue()))
+                .flatMap(nameCountry -> !nameCountry.matches("^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$")
+                        ? ServerResponse.badRequest().bodyValue(Response.PARAMETER_WITH_DIGITS.getValue())
+                        : deleteCountryUseCase.delete(nameCountry)
+                        .flatMap(this::validateResponse));
+    }
+
+    public Mono<ServerResponse> listenFindCountryUseCase(ServerRequest serverRequest) {
+
+        return findCountriesUseCase.findAll()
+                .map(country -> countryToDTO(country, mapper))
+                .collectList()
+                .flatMap(countries -> ServerResponse.ok().bodyValue(countries));
     }
 
     public Mono<ServerResponse> listenPostCyclistTeamUseCase(ServerRequest serverRequest) {
@@ -103,18 +127,8 @@ public class Handler implements HandlerOperation {
                 .flatMap(cyclistDTO -> Objects.isNull(cyclistDTO.getTeamCode()) || !(cyclistDTO.getTeamCode().matches("^[a-zA-Z\\d\\\\s]{1,3}+$")) ?
                         ServerResponse.badRequest().bodyValue(Response.ALPHANUMERIC.getValue())
                         : Mono.just(cyclistToEntity(cyclistDTO, mapper))
-                        .flatMap(cyclistTeamUseCase::executePost)
+                        .flatMap(createCyclistUseCase::createCyclist)
                         .flatMap(this::validateResponse)
-                );
-    }
-
-    public Mono<ServerResponse> listenGetCyclistByTeamUseCase(ServerRequest serverRequest) {
-        return Mono.just(serverRequest)
-                .map(request -> request.pathVariable("teamCode"))
-                .flatMap(teamCode -> !teamCode.matches("^[a-zA-Z\\d\\\\s]{1,3}+$")
-                        ? ServerResponse.badRequest().bodyValue(Response.ALPHANUMERIC.getValue())
-                        : cyclistTeamUseCase.findCyclistByTeamCode(teamCode)
-                        .flatMap(cyclists -> ServerResponse.ok().bodyValue(cyclists))
                 );
     }
 
@@ -122,7 +136,7 @@ public class Handler implements HandlerOperation {
 
         return Mono.just(serverRequest)
                 .map(request -> request.pathVariable("nationality"))
-                .flatMapMany(cyclistUseCase::findByCountry)
+                .flatMapMany(findCyclistByCountryUseCase::findByCountry)
                 .collectList()
                 .flatMap(cyclists -> ServerResponse.ok().bodyValue(cyclists));
     }
